@@ -1,29 +1,25 @@
 public class Wheel {
     private static final double DEFAULT_MASS = 20;
-    private double BEARING_FRICTION = 0.05;
-    private final long TICK_TIME_ms = 20;
-    private static final double STOP_THRESHOLD = 0.02;
+    private static final double STOP_THRESHOLD = 0.05;
+    private static final long TICK_TIME_ms = 20;
+
+    private double resistanceForce = 0.05;
 
     private Thread ticker;
 
-    private volatile double currentVelocity;
     private final double mass;
+    private volatile double currentVelocity;
     private volatile double externalForce;
     private volatile double brakeForce;
 
-    public Wheel(double mass, double startVelocity, double startForce) {
+    public Wheel(double mass) {
         this.mass = mass;
-        this.currentVelocity = startVelocity;
-        this.externalForce = startForce;
         startTicker();
     }
 
-    public Wheel(double mass, double startVelocity) {
-        this(mass, startVelocity, 0);
-    }
-
-    public Wheel(double mass) {
-        this(mass, 0, 0);
+    public Wheel(double mass, double constantFriction) {
+        this(mass);
+        this.resistanceForce = constantFriction;
     }
 
     public Wheel() {
@@ -52,8 +48,7 @@ public class Wheel {
     }
 
     private void tick() {
-        //velocity = oldVelocity + acceleration
-        double resistForce = Math.signum(currentVelocity) * -1 * (BEARING_FRICTION + brakeForce);
+        double resistForce = Math.signum(currentVelocity) * -1 * (resistanceForce + brakeForce);
         double acceleration = (resistForce + externalForce) / mass;
         double velocity = currentVelocity + acceleration * ((double) TICK_TIME_ms / 1000);
         if (Math.abs(velocity) < STOP_THRESHOLD) {
@@ -87,6 +82,10 @@ public class Wheel {
                 addForce(-force);
             }
         }).start();
+    }
+
+    protected void setBrackingForce(double force) {
+        this.brakeForce = Math.abs(force);
     }
 
     public void brake(double force) {
