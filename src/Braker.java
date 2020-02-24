@@ -27,4 +27,8 @@ public class Braker extends Wheel {
         setBrackingForce(0);
         isActive = false;
     }
+
+    public boolean isActive() {
+        return isActive;
+    }
 }
